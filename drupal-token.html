@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerador Criptográfico de Tokens Dinâmicos</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 650px;
+            margin: 40px auto;
+            padding: 25px;
+            background-color: #0f172a;
+            color: #f8fafc;
+            border-radius: 12px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+        }
+        h2 {
+            color: #38bdf8;
+            border-bottom: 2px solid #334155;
+            padding-bottom: 10px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #94a3b8;
+        }
+        input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            background-color: #1e293b;
+            border: 1px solid #475569;
+            border-radius: 6px;
+            color: #fff;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+        input:focus {
+            outline: none;
+            border-color: #38bdf8;
+            box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.2);
+        }
+        .row {
+            display: flex;
+            gap: 15px;
+        }
+        .row .form-group {
+            flex: 1;
+        }
+        button {
+            background-color: #0284c7;
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            width: 100%;
+            transition: background 0.2s;
+        }
+        button:hover {
+            background-color: #0369a1;
+        }
+        .result-container {
+            margin-top: 25px;
+            padding: 15px;
+            background-color: #1e293b;
+            border-left: 6px solid #38bdf8;
+            border-radius: 4px;
+        }
+        .token-display {
+            font-family: monospace;
+            background: #0f172a;
+            padding: 10px;
+            border-radius: 4px;
+            color: #34d399;
+            word-break: break-all;
+            margin: 10px 0;
+        }
+        .output-link {
+            color: #38bdf8;
+            text-decoration: none;
+            font-weight: bold;
+            word-break: break-all;
+        }
+        .output-link:hover {
+            text-decoration: underline;
+        }
+        .info {
+            font-size: 12px;
+            color: #94a3b8;
+            margin-top: 5px;
+        }
+        .footer-link {
+            margin-top: 30px;
+            padding-top: 15px;
+            border-top: 1px solid #334155;
+            text-align: center;
+        }
+        .footer-link a {
+            color: #94a3b8;
+            text-decoration: none;
+            font-size: 14px;
+        }
+        .footer-link a:hover {
+            color: #38bdf8;
+        }
+    </style>
+</head>
+<body>
+
+    <h2>Gerador Criptográfico de Tokens Reais</h2>
+
+    <div class="form-group">
+        <label for="parentUrl">Link Pai (URL Destino no Drupal):</label>
+        <input type="text" id="parentUrl" value="https://meusite-drupal.com?">
+    </div>
+
+    <div class="row">
+        <div class="form-group">
+            <label for="secretKey">Chave Secreta Partilhada (Salt):</label>
+            <input type="text" id="secretKey" value="ChaveSecretaSuperPoderosa123!">
+            <div class="info">Deve ser idêntica à configurada no Drupal.</div>
+        </div>
+        
+        <div class="form-group">
+            <label for="uid">ID do Utilizador Drupal (UID):</label>
+            <input type="text" id="uid" value="1">
+        </div>
+    </div>
+
+    <button onclick="gerarTokenReal()">Gerar Token Seguro Baseado em Tempo</button>
+
+    <div class="result-container" id="resultContainer" style="display: none;">
+        <div><strong>Hash Criptográfico Dinâmico (SHA-256):</strong></div>
+        <div class="token-display" id="tokenOutput"></div>
+        <div class="info" style="margin-bottom: 15px;">Este token muda automaticamente a cada 60 segundos com base na hora atual.</div>
+
+        <div><strong>Link Seguro com Parâmetros de Autenticação:</strong></div>
+        <div style="margin-top: 5px;">
+            <a id="finalUrlLink" class="output-link" href="#" target="_blank"></a>
+        </div>
+    </div>
+
+    <div class="footer-link">
+        <a href="https://drupal.org" target="_blank">Ver documentação do projeto original no Drupal.org</a>
+    </div>
+
+    <script>
+        // Função auxiliar para converter string em ArrayBuffer
+        function textToBuffer(text) {
+            return new TextEncoder().encode(text);
+        }
+
+        // Função para converter ArrayBuffer em string Hexadecimal
+        function bufferToHex(buffer) {
+            return Array.from(new Uint8Array(buffer))
+                .map(b => b.toString(16).padStart(2, '0'))
+                .join('');
+        }
+
+        async function gerarTokenReal() {
+            const baseUrl = document.getElementById('parentUrl').value;
+            const secret = document.getElementById('secretKey').value;
+            const uid = document.getElementById('uid').value;
+
+            // Criar um carimbo de data/hora dinâmico (muda a cada 60 segundos)
+            // Isto garante que o token expire e seja "poderoso" contra ataques de replicação
+            const timeStep = Math.floor(Date.now() / 1000 / 60);
+
+            // String combinada para gerar o Hash (Dados + Tempo + Segredo)
+            const mensagem = `${uid}:${timeStep}`;
+
+            // Utiliza a Web Crypto API nativa do navegador para criptografia real (HMAC-SHA256)
+            const keyBuffer = textToBuffer(secret);
+            const msgBuffer = textToBuffer(mensagem);
+
+            const cryptoKey = await crypto.subtle.importKey(
+                "raw", 
+                keyBuffer, 
+                { name: "HMAC", hash: "SHA-256" }, 
+                false, 
+                ["sign"]
+            );
+
+            const signatureBuffer = await crypto.subtle.sign("HMAC", cryptoKey, msgBuffer);
+            const tokenReal = bufferToHex(signatureBuffer);
+
+            // Construir a URL com os dados de validação que o Drupal vai ler
+            // O Drupal precisará do UID, do Timestamp (ou aceitar a margem atual) e do Hash para validar
+            const params = `uid=${uid}&timestamp=${timeStep}&hash=${tokenReal}`;
+            const urlFinal = baseUrl.endsWith('?') || baseUrl.endsWith('&') ? `${baseUrl}${params}` : `${baseUrl}?${params}`;
+
+            // Exibir no ecrã
+            document.getElementById('tokenOutput').innerText = tokenReal;
+            
+            const linkElement = document.getElementById('finalUrlLink');
+            linkElement.href = urlFinal;
+            linkElement.innerText = urlFinal;
+
+            document.getElementById('resultContainer').style.display = 'block';
+        }
+    </script>
+<p>pesquisar sempre <br>e kamala harris exemplo</p>
+</body>
+</html>
