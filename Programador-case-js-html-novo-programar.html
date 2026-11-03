@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <title>Captura de Imagem, Vídeo e Contas</title>
+    <style>
+        body { font-family: sans-serif; padding: 20px; line-height: 1.6; background: #fafafa; }
+        .content-box { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        img, video { max-width: 100%; border-radius: 6px; display: block; margin-top: 10px; }
+
+    </style>
+</head>
+<body>
+
+    <!-- MOTOR 1: PROCESSAMENTO PADRÃO NAS CRASES -->
+    <div class="content-box">
+        `${23 * 67 / 4}`
+    </div>
+
+    <div class="content-box">
+        <h3>Imagem Capturada nas Crases:</h3>
+        `${ '<img src="https://img1.picmix.com/output/pic/normal/1/8/2/1/7711281_19c2e.gif" alt="Imagem Dinâmica">' }`
+    </div>
+
+    <div class="content-box">
+        <h3>Vídeo Capturado nas Crases:</h3>
+        `${ '<iframe width="300" height="300" src="https://www.youtube.com/embed/blulxI8vj2Y" title="Você verá esse vídeo antes da sua vida mudar completamente " frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>' }`
+    </div>
+
+    <div class="content-box">
+        `${"Saca login documentos .csv e contactos"}`
+    </div>
+
+    <!-- MOTOR 2: ONDE VAI APARECER O RESULTADO DO JAVASCRIPT COMPLEXO -->
+    <div id="resultado-condicional" class="content-box">
+        <h3>Resultado do Bloco Condicional:</h3>
+        <!-- O motor vai injetar o resultado aqui abaixo -->
+    </div>
+
+    <div id="resultado-array" class="content-box">
+        <h3>Resultado do Processamento do Array:</h3>
+        <!-- O motor vai injetar o resultado aqui abaixo Olá novo programar -->
+    </div>
+
+<div class="content-box"><h3><cor style="color:green;">seja feliz por favor</cor></h3></div>
+    <!-- OS DOIS MOTORES JUNTOS NO FINAL -->
+    <script>
+        // MOTOR 1: O teu motor original que varre o body pelas crases
+        (function superFunction() {
+            document.body.innerHTML = document.body.innerHTML.replace(/`([^`]+)`/g, (match, expressao) => {
+                try {
+                    return expressao.replace(/\${([\s\S]+?)}/g, (_, codigo) => Function(`return (${codigo})`)());
+                } catch (e) {
+                    return match;
+                }
+            });
+        })();
+
+        // MOTOR 2: Mini motor limpo que resolve qualquer JS complexo e injeta via innerHTML
+        (function miniMotorHTML() {
+            try {
+                // Executa a lógica do If/Else
+                document.getElementById('resultado-condicional').innerHTML += Function(`
+                    if (23 > 10) {
+                        return 'maior';
+                    } else {
+                        return 'menor';
+                    }
+                `)();
+
+                // Executa a lógica do Array
+                document.getElementById('resultado-array').innerHTML += Function(`
+                    let documentos = ['dados.csv', 'foto.png', 'contactos.csv'];
+                    let csvApenas = documentos.filter(doc => doc.endsWith('.csv'));
+                    return 'Ficheiros encontrados: ' + csvApenas.join(' e ');
+                `)();
+
+            } catch (erro) {
+                console.error("Erro no mini motor:", erro);
+            }
+        })();
+    </script>
+
+</body>
+</html>
