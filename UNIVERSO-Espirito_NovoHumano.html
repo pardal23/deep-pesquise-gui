@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8">
+  <title>Cosmos de Nomes, Frases & Luz</title>
+</head>
+<body style="margin: 0; background: #03030a; color: white; font-family: monospace; overflow: hidden;">
+
+  <div id="cosmos"></div>
+
+  <script>
+    let seres = [];
+    let frases = [];
+    let tempo = 0;
+
+    // A ÚNICA FUNCTION: cria humanos, manifesta frases coloridas e anima toda a rede
+    function cosmos(novoNome = null, novaFrase = null, novaForca = 9) {
+      
+      // 1. Se escreveste um Nome, nasce um Novo Humano na rede
+      if (novoNome && novoNome.trim() !== "") {
+        seres.push({
+          nome: novoNome,
+          forca: novaForca,
+          id: seres.length + 1,
+          xBase: 15 + (seres.length * 29) % 70,
+          yBase: 25 + (seres.length * 37) % 55
+        });
+      }
+
+      // 2. Se escreveste uma Frase/Pensamento, ela junta-se ao cenário em órbita colorida
+      if (novaFrase && novaFrase.trim() !== "") {
+        frases.push({
+          texto: novaFrase,
+          id: frases.length + 1,
+          xBase: 12 + (frases.length * 33) % 75,
+          yBase: 18 + (frases.length * 23) % 65,
+          corBase: (frases.length * 73) % 360
+        });
+      }
+
+      tempo += 0.04;
+
+      // 3. Calcula movimento e arco-íris de cores para os Novos Humanos
+      let posicoes = seres.map((ser) => {
+        let x = ser.xBase + Math.sin(tempo + ser.id) * 6;
+        let y = ser.yBase + Math.cos(tempo * 0.8 + ser.id) * 6;
+        let cor = (ser.id * 70 + tempo * 45) % 360; // Rotação rápida de cores vivas
+        let pulso = Math.sin(tempo * 2 + ser.id) * 9;
+        let moral = Math.floor(ser.forca * 10 + tempo * ser.forca);
+        return { ...ser, x, y, cor, pulso, moral };
+      });
+
+      // 4. Desenha as linhas de energia multicoloridas entre todos os seres
+      let linhasSVG = "";
+      for (let i = 0; i < posicoes.length; i++) {
+        for (let j = i + 1; j < posicoes.length; j++) {
+          let a = posicoes[i];
+          let b = posicoes[j];
+          linhasSVG += `
+            <line x1="${a.x}%" y1="${a.y}%" x2="${b.x}%" y2="${b.y}%" 
+              stroke="hsla(${(a.cor + b.cor) / 2}, 100%, 60%, 0.65)" 
+              stroke-width="${2 + Math.sin(tempo * 3) * 1.2}" 
+              stroke-dasharray="8,4" />
+          `;
+        }
+      }
+
+      // 5. Desenha os Novos Humanos com auras vibrantes
+      let seresHTML = posicoes.map((s) => `
+        <div style="
+          position: absolute;
+          left: ${s.x}%;
+          top: ${s.y}%;
+          transform: translate(-50%, -50%);
+          text-align: center;
+          pointer-events: none;
+          z-index: 3;
+        ">
+          <div style="
+            width: ${20 + s.pulso * 0.4}px;
+            height: ${20 + s.pulso * 0.4}px;
+            margin: 0 auto 4px auto;
+            border-radius: 50%;
+            background: hsl(${s.cor}, 100%, 70%);
+            box-shadow: 0 0 ${20 + s.pulso}px hsl(${s.cor}, 100%, 60%), 0 0 35px hsl(${(s.cor + 60) % 360}, 100%, 50%);
+          "></div>
+          
+          <div style="
+            width: ${36 + s.pulso * 0.7}px;
+            height: ${50 + s.pulso * 0.7}px;
+            margin: 0 auto;
+            border-radius: 50% 50% 20% 20%;
+            background: linear-gradient(180deg, hsl(${s.cor}, 100%, 60%), hsl(${(s.cor + 90) % 360}, 100%, 40%), transparent);
+            box-shadow: 0 0 ${25 + s.pulso}px hsla(${s.cor}, 100%, 55%, 0.8);
+          "></div>
+
+          <div style="margin-top: 6px; text-shadow: 0 0 10px #000;">
+            <b style="color: hsl(${s.cor}, 100%, 75%); font-size: 14px;">${s.nome}</b><br>
+            <small style="color: hsl(${(s.cor + 120) % 360}, 100%, 80%);">Moral: +${s.moral}</small>
+          </div>
+        </div>
+      `).join("");
+
+      // 6. Desenha as Frases/Sabedorias flutuantes em cápsulas de luz colorida
+      let frasesHTML = frases.map((f) => {
+        let fx = f.xBase + Math.cos(tempo * 0.6 + f.id) * 5;
+        let fy = f.yBase + Math.sin(tempo * 0.7 + f.id) * 5;
+        let corF = (f.corBase + tempo * 35) % 360;
+        let corBorda = (corF + 120) % 360;
+
+        return `
+          <div style="
+            position: absolute;
+            left: ${fx}%;
+            top: ${fy}%;
+            transform: translate(-50%, -50%) rotate(${Math.sin(tempo + f.id) * 3}deg);
+            padding: 8px 16px;
+            border-radius: 25px;
+            background: linear-gradient(135deg, hsla(${corF}, 90%, 25%, 0.75), hsla(${corBorda}, 90%, 20%, 0.75));
+            border: 1px solid hsl(${corF}, 100%, 65%);
+            box-shadow: 0 0 18px hsla(${corF}, 100%, 60%, 0.5);
+            color: hsl(${corF}, 100%, 90%);
+            font-size: 13px;
+            font-weight: bold;
+            pointer-events: none;
+            z-index: 2;
+            max-width: 240px;
+            text-align: center;
+          ">
+            ✨ "${f.texto}"
+          </div>
+        `;
+      }).join("");
+
+      // 7. Painel de criação com inputs para Nomes e Frases (criado uma única vez)
+      if (!document.getElementById("painel")) {
+        document.getElementById("cosmos").innerHTML = `
+          <div id="painel" style="position: relative; z-index: 10; padding: 14px; background: linear-gradient(90deg, #120824, #091d2c, #1a0b2e); border-bottom: 2px solid #6c5ce7; text-align: center;">
+            <input id="inNome" placeholder="Nome do Ser (opcional)" style="padding: 8px; border-radius: 8px; border: 1px solid #00cec9; background: #0a0a18; color: white; width: 170px;">
+            <input id="inFrase" placeholder="Frase ou Verdade Eterna..." style="padding: 8px; border-radius: 8px; border: 1px solid #fd79a8; background: #0a0a18; color: white; width: 250px; margin: 0 6px;">
+            <button onclick="
+              cosmos(document.getElementById('inNome').value, document.getElementById('inFrase').value, 12);
+              document.getElementById('inNome').value = '';
+              document.getElementById('inFrase').value = '';
+            " style="padding: 8px 18px; background: linear-gradient(45deg, #00cec9, #6c5ce7, #fd79a8); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; text-shadow: 0 1px 3px #000;">
+              🌈 Manifestar no Universo
+            </button>
+          </div>
+          <div id="espaco" style="position: relative; width: 100vw; height: 92vh; background: radial-gradient(circle at center, #0e0826 0%, #030308 100%);"></div>
+        `;
+      }
+
+      // 8. Junta fundo, linhas, frases e humanos num único fluxo contínuo
+      document.getElementById("espaco").innerHTML = `
+        <svg style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1;">
+          ${linhasSVG}
+        </svg>
+        ${frasesHTML}
+        ${seresHTML}
+      `;
+    }
+
+    // Inicia o cenário com exemplos vivos
+    cosmos("Alma Solar", "Nada começa aqui, nada acaba aqui.", 12);
+    cosmos("Mente Cósmica", "A evolução é eterna e moral.", 15);
+    cosmos("Espírito Livre", "", 10);
+
+    // Mantém tudo em movimento e mudança de cor infinita
+    setInterval(() => cosmos(), 40);
+  </script>
+
+</body>
+</html>
+
